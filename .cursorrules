@@ -1,0 +1,297 @@
+# Project: TikTok/Instagram Video Transcription Tool
+
+## Project Goal
+Build a web application where users can paste a TikTok or Instagram Reel URL, and get an AI-generated transcript of the video. This is Phase 1 of a larger content creation tool.
+
+## Learning Goals
+- Understand full-stack development (frontend + backend)
+- Learn Git/GitHub workflow (commits, branches, PRs)
+- Master Supabase (auth, database, storage)
+- Work with APIs (OpenAI Whisper)
+- Build iteratively with mock data first, then real backend
+
+## Tech Stack
+- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Supabase (Auth, PostgreSQL Database, File Storage)
+- **APIs:** OpenAI Whisper (transcription)
+- **Deployment:** Vercel (frontend), Supabase Cloud (backend)
+- **Version Control:** Git + GitHub
+
+## Why This Stack?
+- Next.js 14: Modern React framework, great for learning, easy deployment
+- Supabase: Handles auth, database, and storage in one place (saves time)
+- TypeScript: Catches errors before runtime (helpful for beginners)
+- Tailwind: Fast UI development without writing custom CSS
+
+## Project Status
+- [ ] Milestone 1: Foundation & Auth Setup
+- [ ] Milestone 2: UI with Mock Data
+- [ ] Milestone 3: Real Backend Integration
+- [ ] Milestone 4: Video Processing & Transcription
+- [ ] Milestone 5: Polish & Deployment
+
+Current Milestone: Not started yet
+
+## Code Style & Conventions
+- Use TypeScript strict mode (catch errors early)
+- Functional React components with hooks
+- Server Components by default (Next.js 14 pattern)
+- Use "use client" directive only when needed (interactivity, useState, etc)
+- Tailwind CSS for all styling (no custom CSS files)
+- shadcn/ui for pre-built components (buttons, forms, etc)
+- Error handling: Always use try/catch for async operations
+- User feedback: Show loading states and error messages
+
+## File Structure
+```
+/app                          # Next.js App Router
+  /(auth)                     # Auth-related pages (login)
+  /(dashboard)                # Protected pages (dashboard, transcribe)
+  /api                        # Backend API routes
+  /page.tsx                   # Landing page
+  /layout.tsx                 # Root layout (wraps all pages)
+/components                   # Reusable UI components
+  /ui                         # shadcn/ui components (buttons, inputs, etc)
+  /[feature-name]             # Feature-specific components
+/lib                          # Utility functions
+  /supabase                   # Supabase client setup
+  /utils                      # Helper functions
+/types                        # TypeScript type definitions
+  /supabase.ts                # Database types
+```
+
+## Database Schema (Supabase PostgreSQL)
+
+### Table: transcriptions
+```
+id                uuid (primary key, auto-generated)
+user_id           uuid (foreign key → auth.users)
+video_url         text (the TikTok/Instagram URL)
+platform          text ('tiktok' or 'instagram')
+title             text (optional, nullable)
+transcript        text (the transcription result)
+audio_url         text (URL to stored MP3 file, nullable)
+duration_seconds  integer (length of video, nullable)
+status            text ('processing' | 'completed' | 'failed')
+created_at        timestamp (auto-generated)
+updated_at        timestamp (auto-updated)
+```
+
+**Row Level Security (RLS):**
+- Users can only INSERT their own transcriptions
+- Users can only SELECT their own transcriptions (where user_id = auth.uid())
+- Users can only UPDATE their own transcriptions
+
+## Key Implementation Patterns
+
+### Authentication (Supabase)
+- Use Google OAuth (Sign in with Google)
+- Server Components: Use `createServerClient` from Supabase
+- Client Components: Use `createBrowserClient` from Supabase
+- Protected routes: Check auth in middleware.ts
+
+### Data Fetching (Next.js 14)
+- Server Components: Direct Supabase queries (no useEffect needed)
+- Client Components: Use for forms, interactive UI
+- Loading states: Suspense boundaries or local state
+- Error handling: Try/catch with user-friendly messages
+
+### API Routes Pattern
+```typescript
+// app/api/transcribe/route.ts
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    // Process request
+    return Response.json({ success: true, data })
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 })
+  }
+}
+```
+
+## Milestones & Task Breakdown
+
+### Milestone 1: Foundation & Auth (Week 1)
+**Goal:** Project set up, user can sign in with Google, dashboard protected
+
+**Task 1.1: Project Initialization**
+- Create Next.js 14 project with TypeScript
+- Install Tailwind CSS, shadcn/ui
+- Set up folder structure
+- Initialize Git, push to GitHub
+- **Dependencies:** None
+- **Status:** Not started
+
+**Task 1.2: Supabase Setup**
+- Create Supabase project
+- Enable Google OAuth
+- Add Supabase env variables
+- Create Supabase client utilities
+- **Dependencies:** Task 1.1 complete
+- **Status:** Not started
+
+**Task 1.3: Auth Pages**
+- Create login page with Google sign-in
+- Create dashboard page (protected)
+- Set up middleware for route protection
+- Test sign in/sign out flow
+- **Dependencies:** Task 1.2 complete
+- **Status:** Not started
+
+**Acceptance Criteria:**
+- [ ] App runs on localhost:3000
+- [ ] User can sign in with Google
+- [ ] Dashboard only accessible when authenticated
+- [ ] User can sign out
+- [ ] Code committed to GitHub
+
+---
+
+### Milestone 2: UI with Mock Data (Week 2)
+**Goal:** Build the transcription UI using fake data (no real API yet)
+
+**Task 2.1: Database Schema**
+- Create 'transcriptions' table in Supabase
+- Set up Row Level Security policies
+- Generate TypeScript types
+- **Dependencies:** Milestone 1 complete
+- **Status:** Not started
+
+**Task 2.2: Transcription Form (Mock)**
+- Create form component for URL input
+- Add platform selector (TikTok/Instagram)
+- Add URL validation
+- Mock submission (console.log, then show fake transcript)
+- **Dependencies:** Task 2.1 complete
+- **Status:** Not started
+
+**Task 2.3: Transcription List (Mock)**
+- Create list component
+- Use hardcoded mock data array
+- Display: title, platform, date, snippet
+- Click to view full transcript
+- **Dependencies:** Task 2.1 complete
+- **Status:** Not started
+
+**Acceptance Criteria:**
+- [ ] Can paste URL and see mock transcript
+- [ ] Dashboard shows list of mock transcriptions
+- [ ] UI looks clean and functional
+- [ ] All committed to GitHub with clear commits
+
+---
+
+### Milestone 3: Real Backend Integration (Week 3)
+**Goal:** Connect form to real Supabase database
+
+**Task 3.1: Save to Supabase**
+- Update form to INSERT into database
+- Handle errors with toast notifications
+- Show success message
+- **Dependencies:** Milestone 2 complete
+- **Status:** Not started
+
+**Task 3.2: Fetch Real Data**
+- Replace mock data with Supabase queries
+- Add loading states
+- Handle empty state (no transcriptions yet)
+- **Dependencies:** Task 3.1 complete
+- **Status:** Not started
+
+**Acceptance Criteria:**
+- [ ] Form submission creates database record
+- [ ] Dashboard shows real data from Supabase
+- [ ] Errors handled gracefully
+- [ ] All committed to GitHub
+
+---
+
+### Milestone 4: Video Processing & Transcription (Week 4)
+**Goal:** Download videos, transcribe with Whisper API
+
+**Task 4.1: Video Download API**
+- Create API endpoint: POST /api/download-video
+- Use library to download TikTok/Instagram videos
+- Convert to MP3 (ffmpeg)
+- Upload to Supabase Storage
+- **Dependencies:** Milestone 3 complete
+- **Status:** Not started
+
+**Task 4.2: Whisper Integration**
+- Create API endpoint: POST /api/transcribe
+- Send audio to OpenAI Whisper
+- Save transcript to database
+- Update status field
+- **Dependencies:** Task 4.1 complete
+- **Status:** Not started
+
+**Task 4.3: End-to-End Flow**
+- Connect form submission → download → transcribe
+- Implement status polling (check every 5 seconds)
+- Show progress indicator
+- Display transcript when complete
+- **Dependencies:** Tasks 4.1 and 4.2 complete
+- **Status:** Not started
+
+**Acceptance Criteria:**
+- [ ] Can paste URL → get real transcript
+- [ ] Shows progress while processing
+- [ ] Handles errors at each stage
+- [ ] All committed to GitHub
+
+---
+
+### Milestone 5: Polish & Deployment (Week 5)
+**Goal:** Production-ready MVP
+
+**Tasks:**
+- Error handling for all edge cases
+- UI polish (loading skeletons, better errors)
+- Mobile responsiveness
+- Deploy to Vercel
+- Set up production Supabase
+- Test end-to-end in production
+
+**Acceptance Criteria:**
+- [ ] App is live at a public URL
+- [ ] No critical bugs
+- [ ] Works on mobile
+- [ ] All committed to GitHub
+
+---
+
+## Environment Variables
+These are secrets - never commit to Git!
+```
+# .env.local (create this file, add to .gitignore)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_key
+```
+
+## Current Task
+**Not started yet** - About to initialize project
+
+## Completed Tasks
+None yet
+
+## Next Immediate Steps
+1. Initialize Next.js project
+2. Set up Git and push to GitHub
+3. Create Supabase project
+4. Set up Google OAuth
+
+## Notes & Learning Points
+- Building with mock data first = faster iteration, learn UI patterns
+- Real backend comes after UI is solid
+- Git commits after each small win
+- Branch per feature = safe experimentation
+- Ask questions when stuck!
+
+## Future Phases (Not MVP)
+- Script analysis features
+- Hook bank (first 5-10 seconds of videos)
+- Branding guidelines generator
+- ICP builder
+- Multi-video batch processing

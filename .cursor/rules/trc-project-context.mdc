@@ -1,0 +1,1179 @@
+---
+alwaysApply: true
+---
+# Project: TikTok/Instagram Video Transcription Tool
+
+## Project Overview
+
+### What We're Building
+A web application where users can:
+1. Paste a TikTok or Instagram Reel URL
+2. Get an AI-generated transcript using OpenAI Whisper
+3. View and manage their past transcriptions
+
+### Future Vision (Not MVP)
+- Script analysis and generation
+- Hook bank (first 5-10 seconds analysis)
+- Branding guidelines creator
+- ICP (Ideal Customer Profile) builder
+
+**Current Focus:** Phase 1 - URL to Transcript tool only
+
+---
+
+## Learning Goals
+
+This project is designed to teach:
+- Full-stack development (frontend + backend)
+- Git/GitHub workflow (commits, branches, PRs, merges)
+- npm packages and dependency management
+- Supabase (authentication, database, storage)
+- API integration (OpenAI Whisper)
+- Next.js 14 patterns (App Router, Server/Client Components)
+- Building iteratively (mock data first, then real backend)
+- Deployment to production (Vercel)
+
+---
+
+## Tech Stack & Rationale
+
+### Frontend
+- **Next.js 14 (App Router)** - Modern React framework, server-side rendering, easy deployment
+- **TypeScript** - Type safety, catches errors before runtime
+- **Tailwind CSS** - Rapid UI development, utility-first styling
+- **shadcn/ui** - Pre-built accessible components
+
+### Backend
+- **Supabase** - All-in-one backend solution
+  - PostgreSQL database (relational data)
+  - Built-in authentication (Google OAuth)
+  - File storage (for video/audio files)
+  - Row-level security (users only see their data)
+  - Real-time capabilities (optional for future)
+
+### APIs
+- **OpenAI Whisper** - Industry-leading audio transcription
+  - ~$0.006/minute of audio
+  - Supports multiple languages
+  - High accuracy
+
+### Hosting
+- **Vercel** - Frontend hosting (Next.js optimized, zero-config)
+- **Supabase Cloud** - Backend/database hosting
+
+### Version Control
+- **Git + GitHub** - Code versioning, collaboration, deployment triggers
+
+---
+
+## Why This Stack?
+
+**For Learning:**
+- Next.js: Industry-standard React framework
+- Supabase: Handles auth + DB + storage in one (less to learn)
+- TypeScript: Teaches proper type safety
+- Vercel: One-click deployment
+
+**For Building:**
+- Fast iteration (mock data → real backend)
+- Generous free tiers (Supabase, Vercel)
+- Great documentation
+- AI-friendly (Cursor works well with this stack)
+
+**Cost Efficiency:**
+- Download video → convert to MP3 → transcribe (cheapest approach)
+- ~$0.01-0.05 per transcription (15-90 second videos)
+
+---
+
+## Code Style & Conventions
+
+### TypeScript
+- Strict mode enabled
+- No `any` types (use proper types)
+- Define interfaces for all data structures
+
+### React/Next.js
+- Functional components with hooks
+- **Server Components by default** (Next.js 14 pattern)
+- Use `"use client"` only when needed:
+  - Forms with state (useState)
+  - Interactive UI (onClick handlers)
+  - Browser APIs (localStorage, window)
+- Keep components focused (single responsibility)
+
+### Styling
+- Tailwind CSS for all styling
+- No custom CSS files
+- Use shadcn/ui components (pre-styled, accessible)
+- Mobile-first responsive design
+
+### Error Handling
+- Always use try/catch for async operations
+- Show user-friendly error messages
+- Use toast notifications for feedback
+- Never crash the app silently
+
+### Data Fetching
+- Server Components: Direct Supabase queries
+- Client Components: Use for mutations/forms
+- Always handle loading states
+- Always handle error states
+
+### File Naming
+- Components: PascalCase (`TranscriptionForm.tsx`)
+- Utilities: camelCase (`videoDownloader.ts`)
+- Pages: lowercase (`page.tsx`, `login/page.tsx`)
+
+---
+
+## File Structure
+```
+transcription-app/
+├── .cursor/
+│   └── rules/                    # Project rules (this file!)
+├── app/
+│   ├── (auth)/                   # Auth route group
+│   │   └── login/
+│   │       └── page.tsx          # Login page
+│   ├── (dashboard)/              # Protected route group
+│   │   ├── dashboard/
+│   │   │   └── page.tsx          # Main dashboard (list of transcriptions)
+│   │   └── transcribe/
+│   │       └── page.tsx          # New transcription page
+│   ├── api/                      # Backend API routes
+│   │   ├── download-video/
+│   │   │   └── route.ts          # Download & convert video
+│   │   ├── transcribe/
+│   │   │   └── route.ts          # Call Whisper API
+│   │   └── process-video/
+│   │       └── route.ts          # Orchestrate full flow
+│   ├── layout.tsx                # Root layout (wraps all pages)
+│   └── page.tsx                  # Landing page (marketing)
+├── components/
+│   ├── ui/                       # shadcn/ui components
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── card.tsx
+│   │   └── toast.tsx
+│   ├── TranscriptionForm.tsx     # Form to submit URLs
+│   ├── TranscriptionCard.tsx     # Individual transcription item
+│   └── TranscriptionList.tsx     # List of all transcriptions
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts             # Browser Supabase client
+│   │   └── server.ts             # Server Supabase client
+│   ├── utils.ts                  # General utilities
+│   ├── validators.ts             # URL validation helpers
+│   └── openai-client.ts          # OpenAI API setup
+├── types/
+│   └── supabase.ts               # Database TypeScript types
+├── .env.local                    # Environment variables (NEVER commit!)
+├── .gitignore                    # What NOT to commit
+├── package.json                  # npm dependencies
+├── tsconfig.json                 # TypeScript configuration
+├── tailwind.config.ts            # Tailwind CSS configuration
+└── next.config.js                # Next.js configuration
+```
+
+---
+
+## Database Schema (Supabase PostgreSQL)
+
+### Table: transcriptions
+```sql
+CREATE TABLE transcriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  video_url TEXT NOT NULL,
+  platform TEXT NOT NULL CHECK (platform IN ('tiktok', 'instagram')),
+  title TEXT,
+  transcript TEXT,
+  audio_url TEXT,
+  duration_seconds INTEGER,
+  status TEXT NOT NULL DEFAULT 'processing' CHECK (status IN ('processing', 'completed', 'failed')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for faster queries
+CREATE INDEX idx_transcriptions_user_id ON transcriptions(user_id);
+CREATE INDEX idx_transcriptions_created_at ON transcriptions(created_at DESC);
+```
+
+### Row Level Security (RLS) Policies
+```sql
+-- Users can only INSERT their own transcriptions
+CREATE POLICY "Users can insert own transcriptions"
+ON transcriptions FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- Users can only SELECT their own transcriptions
+CREATE POLICY "Users can view own transcriptions"
+ON transcriptions FOR SELECT
+USING (auth.uid() = user_id);
+
+-- Users can only UPDATE their own transcriptions
+CREATE POLICY "Users can update own transcriptions"
+ON transcriptions FOR UPDATE
+USING (auth.uid() = user_id);
+
+-- Users can only DELETE their own transcriptions
+CREATE POLICY "Users can delete own transcriptions"
+ON transcriptions FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+**Why RLS matters:** Security layer in the database itself. Even if someone bypasses frontend, they can't access other users' data.
+
+---
+
+## Environment Variables
+```bash
+# .env.local (create this file, add to .gitignore)
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# OpenAI
+OPENAI_API_KEY=your_openai_api_key
+
+# Note: NEXT_PUBLIC_ prefix = available in browser
+# No prefix = server-only (more secure for API keys)
+```
+
+---
+
+## Key Implementation Patterns
+
+### Authentication (Server Component)
+```typescript
+import { createServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function DashboardPage() {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/login')
+  }
+  
+  // User is authenticated, proceed
+}
+```
+
+### Data Fetching (Server Component)
+```typescript
+export default async function DashboardPage() {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  const { data: transcriptions, error } = await supabase
+    .from('transcriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+  
+  if (error) {
+    // Handle error
+  }
+  
+  return <TranscriptionList transcriptions={transcriptions} />
+}
+```
+
+### Form Submission (Client Component)
+```typescript
+'use client'
+
+import { useState } from 'react'
+import { createBrowserClient } from '@/lib/supabase/client'
+
+export function TranscriptionForm() {
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(false)
+  const supabase = createBrowserClient()
+  
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    
+    try {
+      const { data, error } = await supabase
+        .from('transcriptions')
+        .insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          video_url: url,
+          platform: 'tiktok', // detect from URL
+          status: 'processing'
+        })
+      
+      if (error) throw error
+      
+      // Show success toast
+    } catch (error) {
+      // Show error toast
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  return <form onSubmit={handleSubmit}>...</form>
+}
+```
+
+### API Route Pattern
+```typescript
+// app/api/transcribe/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { audioUrl } = body
+    
+    // Process transcription
+    const transcript = await callWhisperAPI(audioUrl)
+    
+    return NextResponse.json({ 
+      success: true, 
+      transcript 
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message }, 
+      { status: 500 }
+    )
+  }
+}
+```
+
+---
+
+## Project Status & Milestones
+
+### ✅ Completed
+- None yet
+
+### 🚧 Current Milestone
+**Milestone 1: Foundation & Auth Setup**
+
+### 📋 Upcoming Milestones
+- Milestone 2: UI with Mock Data
+- Milestone 3: Real Backend Integration
+- Milestone 4: Video Processing & Transcription
+- Milestone 5: Polish & Deployment
+
+---
+
+## Milestone 1: Foundation & Auth Setup (Week 1)
+
+**Goal:** Project initialized, user can sign in with Google, dashboard is protected
+
+### Task 1.1: Project Initialization
+**Status:** ⏳ Not Started  
+**Dependencies:** None  
+**Estimated Time:** 30 minutes
+
+**Actions:**
+- Initialize Next.js 14 project with TypeScript
+- Install Tailwind CSS and shadcn/ui
+- Set up folder structure (/app, /components, /lib, /types)
+- Create .env.local with placeholder values
+- Initialize Git repository
+- Create .gitignore (exclude .env.local, node_modules)
+- Make first commit
+- Create GitHub repository
+- Push to GitHub
+
+**Files Created:**
+- package.json (dependency manifest)
+- tsconfig.json (TypeScript config)
+- tailwind.config.ts (Tailwind config)
+- next.config.js (Next.js config)
+- .gitignore (exclude sensitive files)
+- .env.local (environment variables)
+- /app, /components, /lib, /types directories
+
+**Acceptance Criteria:**
+- [ ] App runs on localhost:3000
+- [ ] Can see Next.js welcome page
+- [ ] Git initialized with initial commit
+- [ ] Pushed to GitHub repository
+- [ ] .env.local NOT committed to Git
+
+**Commands Used:**
+```bash
+npx create-next-app@latest . --typescript --tailwind --app
+npm install
+git init
+git add .
+git commit -m "Initial commit: Next.js 14 with TypeScript and Tailwind"
+git remote add origin [your-github-repo-url]
+git push -u origin main
+```
+
+---
+
+### Task 1.2: Supabase Setup
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 1.1 complete  
+**Estimated Time:** 45 minutes
+
+**Actions:**
+- Create Supabase project (https://supabase.com)
+- Copy project URL and anon key
+- Add to .env.local
+- Enable Google OAuth provider in Supabase dashboard
+- Configure OAuth callback URLs
+- Install Supabase client library
+- Create Supabase client utilities (browser + server)
+
+**Files Created:**
+- /lib/supabase/client.ts (browser client)
+- /lib/supabase/server.ts (server client)
+
+**Environment Variables Added:**
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://[project-ref].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your-anon-key]
+```
+
+**Acceptance Criteria:**
+- [ ] Supabase project created
+- [ ] Google OAuth enabled
+- [ ] Environment variables set
+- [ ] Supabase clients created
+- [ ] Can import and use clients
+- [ ] Committed to Git (branch: feature/supabase-setup)
+
+**Commands Used:**
+```bash
+npm install @supabase/supabase-js
+git checkout -b feature/supabase-setup
+git add .
+git commit -m "Add Supabase setup with Google OAuth"
+git push origin feature/supabase-setup
+```
+
+---
+
+### Task 1.3: Authentication Pages
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 1.2 complete  
+**Estimated Time:** 2 hours
+
+**Actions:**
+- Create login page with Google sign-in button
+- Create dashboard page (protected route)
+- Set up middleware.ts for route protection
+- Implement sign-out functionality
+- Test full auth flow
+
+**Files Created:**
+- /app/(auth)/login/page.tsx (login page)
+- /app/(dashboard)/dashboard/page.tsx (protected dashboard)
+- /middleware.ts (route protection)
+- /components/ui/button.tsx (shadcn button component)
+
+**Key Code Patterns:**
+- Login: Use Supabase signInWithOAuth
+- Dashboard: Check auth in Server Component
+- Middleware: Redirect unauthenticated users
+- Sign out: Use Supabase signOut
+
+**Acceptance Criteria:**
+- [ ] Login page shows "Sign in with Google" button
+- [ ] Clicking button opens Google OAuth flow
+- [ ] After auth, redirects to /dashboard
+- [ ] Dashboard shows user email
+- [ ] Unauthenticated users redirected to /login
+- [ ] Can sign out successfully
+- [ ] Committed to Git (branch: feature/auth-pages)
+- [ ] PR created and merged to main
+
+**Git Workflow:**
+```bash
+git checkout -b feature/auth-pages
+[make changes, test]
+git add .
+git commit -m "Add authentication with Google OAuth"
+git push origin feature/auth-pages
+[Create PR on GitHub, review, merge]
+git checkout main
+git pull origin main
+```
+
+---
+
+## Milestone 2: UI with Mock Data (Week 2)
+
+**Goal:** Build transcription UI using fake data (no real API yet)
+
+### Task 2.1: Database Schema Design
+**Status:** ⏳ Not Started  
+**Dependencies:** Milestone 1 complete  
+**Estimated Time:** 30 minutes
+
+**Actions:**
+- Create 'transcriptions' table in Supabase SQL editor
+- Set up Row Level Security (RLS) policies
+- Generate TypeScript types from schema
+- Test RLS policies work correctly
+
+**SQL to Run:**
+[See Database Schema section above]
+
+**Files Created:**
+- /types/supabase.ts (auto-generated TypeScript types)
+
+**Acceptance Criteria:**
+- [ ] Table created in Supabase dashboard
+- [ ] RLS policies active (check in Supabase)
+- [ ] TypeScript types generated
+- [ ] Can query table (returns empty array)
+- [ ] RLS tested (can't access other users' data)
+- [ ] Committed to Git (branch: feature/database-schema)
+
+---
+
+### Task 2.2: Transcription Form (Mock Version)
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 2.1 complete  
+**Estimated Time:** 2 hours
+
+**Actions:**
+- Create form component for URL input
+- Add platform dropdown (TikTok/Instagram)
+- Add URL validation
+- Mock submission (console.log, show fake transcript after delay)
+- Install and set up toast notifications (sonner)
+
+**Files Created:**
+- /components/TranscriptionForm.tsx
+- /lib/validators.ts (URL validation)
+- /app/(dashboard)/transcribe/page.tsx (form page)
+- /components/ui/input.tsx (shadcn input)
+- /components/ui/select.tsx (shadcn select)
+
+**Mock Behavior:**
+- User pastes URL
+- Validate TikTok/Instagram format
+- Show "Processing..." for 2 seconds (setTimeout)
+- Display mock transcript text
+- Save to component state only (not database yet)
+
+**Acceptance Criteria:**
+- [ ] Form accepts URL input
+- [ ] Validates URL format (show error if invalid)
+- [ ] Platform auto-detected from URL
+- [ ] Shows loading state during mock processing
+- [ ] Displays mock transcript after delay
+- [ ] Toast notifications work
+- [ ] Committed to Git (branch: feature/transcription-form-mock)
+
+---
+
+### Task 2.3: Transcription List View (Mock Data)
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 2.1 complete  
+**Estimated Time:** 2 hours
+
+**Actions:**
+- Create hardcoded mock data array
+- Create list component to display transcriptions
+- Create card component for individual items
+- Add empty state (no transcriptions yet)
+- Add loading skeleton UI
+- Click card to view full transcript
+
+**Files Created:**
+- /components/TranscriptionCard.tsx
+- /components/TranscriptionList.tsx
+- /app/(dashboard)/dashboard/page.tsx (update with list)
+- /components/ui/card.tsx (shadcn card)
+- /components/ui/skeleton.tsx (shadcn skeleton)
+
+**Mock Data Structure:**
+```typescript
+const mockTranscriptions = [
+  {
+    id: '1',
+    video_url: 'https://tiktok.com/@user/video/123',
+    platform: 'tiktok',
+    title: 'Marketing Tips for Small Business',
+    transcript: 'Hey everyone! Today I want to share...',
+    created_at: '2024-01-15T10:30:00Z',
+    status: 'completed'
+  },
+  // ... more items
+]
+```
+
+**Acceptance Criteria:**
+- [ ] Dashboard shows list of mock transcriptions
+- [ ] Each card shows: title, platform, date, snippet
+- [ ] Click card to see full transcript
+- [ ] Empty state shown if array is empty
+- [ ] Loading skeleton displays during mock "fetch"
+- [ ] Mobile responsive
+- [ ] Committed to Git (branch: feature/transcription-list-mock)
+
+---
+
+## Milestone 3: Real Backend Integration (Week 3)
+
+**Goal:** Connect form to real Supabase database
+
+### Task 3.1: Save to Supabase (Real DB Writes)
+**Status:** ⏳ Not Started  
+**Dependencies:** Milestone 2 complete  
+**Estimated Time:** 1.5 hours
+
+**Actions:**
+- Update form submission to INSERT into Supabase
+- Handle success/error states with toasts
+- Redirect to dashboard after successful submission
+- Add optimistic UI updates (show immediately)
+
+**Files Updated:**
+- /components/TranscriptionForm.tsx (replace mock with real DB insert)
+
+**Pattern:**
+```typescript
+try {
+  const { data, error } = await supabase
+    .from('transcriptions')
+    .insert({
+      user_id: user.id,
+      video_url: url,
+      platform: detectPlatform(url),
+      status: 'processing',
+      transcript: '[Pending transcription...]'
+    })
+    .select()
+    .single()
+  
+  if (error) throw error
+  
+  toast.success('Transcription started!')
+  router.push('/dashboard')
+} catch (error) {
+  toast.error('Failed to start transcription')
+}
+```
+
+**Acceptance Criteria:**
+- [ ] Form submission creates row in Supabase
+- [ ] Can see new row in Supabase dashboard
+- [ ] Success toast appears
+- [ ] Redirects to dashboard
+- [ ] Error handling works (test by disconnecting internet)
+- [ ] Committed to Git (branch: feature/supabase-insert)
+
+---
+
+### Task 3.2: Fetch & Display Real Data
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 3.1 complete  
+**Estimated Time:** 1 hour
+
+**Actions:**
+- Replace mock data with real Supabase query
+- Add loading states (Suspense or local state)
+- Handle empty state (no transcriptions yet)
+- Add error boundary for failed queries
+
+**Files Updated:**
+- /app/(dashboard)/dashboard/page.tsx (fetch from Supabase)
+
+**Next.js 14 Pattern (Server Component):**
+```typescript
+export default async function DashboardPage() {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  const { data: transcriptions, error } = await supabase
+    .from('transcriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+  
+  if (error) {
+    return <ErrorState />
+  }
+  
+  return <TranscriptionList transcriptions={transcriptions} />
+}
+```
+
+**Acceptance Criteria:**
+- [ ] Dashboard fetches real data from Supabase
+- [ ] New submissions appear in list immediately
+- [ ] Shows loading state during fetch
+- [ ] Empty state if no transcriptions
+- [ ] Error state if query fails
+- [ ] Committed to Git (branch: feature/real-data-fetching)
+
+---
+
+## Milestone 4: Video Processing & Transcription (Week 4)
+
+**Goal:** Download videos, transcribe with Whisper API
+
+### Task 4.1: Video Download API Route
+**Status:** ⏳ Not Started  
+**Dependencies:** Milestone 3 complete  
+**Estimated Time:** 3 hours
+
+**Actions:**
+- Install video download libraries
+- Create API endpoint: POST /api/download-video
+- Download TikTok/Instagram video
+- Convert to MP3 using ffmpeg
+- Upload MP3 to Supabase Storage
+- Return audio URL
+
+**Libraries Needed:**
+```bash
+npm install @xnetcat/dl-tiktok
+npm install fluent-ffmpeg @ffmpeg-installer/ffmpeg
+```
+
+**Files Created:**
+- /app/api/download-video/route.ts
+- /lib/video-downloader.ts (helper functions)
+
+**API Flow:**
+1. Receive POST with { videoUrl: string }
+2. Validate URL
+3. Download video using library
+4. Convert to MP3 (ffmpeg)
+5. Upload to Supabase Storage bucket: 'audio-files'
+6. Return { audioUrl: string, duration: number }
+
+**Acceptance Criteria:**
+- [ ] Can POST to /api/download-video with URL
+- [ ] Downloads TikTok video successfully
+- [ ] Downloads Instagram Reel successfully
+- [ ] Converts to MP3
+- [ ] Uploads to Supabase Storage
+- [ ] Returns audio URL
+- [ ] Handles errors (video unavailable, network failure)
+- [ ] Committed to Git (branch: feature/video-download-api)
+
+---
+
+### Task 4.2: Whisper Integration
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 4.1 complete  
+**Estimated Time:** 2 hours
+
+**Actions:**
+- Install OpenAI SDK
+- Create API endpoint: POST /api/transcribe
+- Fetch audio from Supabase Storage
+- Send to Whisper API
+- Update transcription record with result
+
+**Libraries Needed:**
+```bash
+npm install openai
+```
+
+**Files Created:**
+- /app/api/transcribe/route.ts
+- /lib/openai-client.ts
+
+**API Flow:**
+1. Receive POST with { audioUrl: string, transcriptionId: string }
+2. Fetch audio file from Supabase Storage
+3. Send to Whisper API
+4. Receive transcript text
+5. Update Supabase record:
+   - transcript = result text
+   - status = 'completed'
+   - duration_seconds = audio length
+
+**Acceptance Criteria:**
+- [ ] Can transcribe audio file
+- [ ] Transcript saved to Supabase
+- [ ] Status updates from 'processing' to 'completed'
+- [ ] Handles errors (bad audio, API failure)
+- [ ] Sets status to 'failed' on error
+- [ ] Committed to Git (branch: feature/whisper-integration)
+
+---
+
+### Task 4.3: End-to-End Flow
+**Status:** ⏳ Not Started  
+**Dependencies:** Tasks 4.1 and 4.2 complete  
+**Estimated Time:** 3 hours
+
+**Actions:**
+- Create orchestrator API: POST /api/process-video
+- Connect form submission → download → transcribe
+- Implement status polling (check every 5 seconds)
+- Show progress indicator to user
+- Display transcript when complete
+
+**Files Created/Updated:**
+- /app/api/process-video/route.ts (orchestrator)
+- /components/TranscriptionForm.tsx (add polling)
+- /components/ProcessingStatus.tsx (progress UI)
+
+**User Flow:**
+1. User pastes URL, clicks submit
+2. Creates DB record with status='processing'
+3. Calls /api/process-video in background
+4. Shows "Processing..." with spinner
+5. Polls DB every 5 seconds for status update
+6. Status changes: processing → completed
+7. Shows transcript in UI
+
+**Orchestrator Logic:**
+```typescript
+// /api/process-video/route.ts
+export async function POST(request: Request) {
+  const { transcriptionId, videoUrl } = await request.json()
+  
+  try {
+    // Step 1: Download and convert
+    const { audioUrl, duration } = await fetch('/api/download-video', {
+      method: 'POST',
+      body: JSON.stringify({ videoUrl })
+    }).then(r => r.json())
+    
+    // Step 2: Transcribe
+    const { transcript } = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: JSON.stringify({ audioUrl, transcriptionId })
+    }).then(r => r.json())
+    
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    // Update status to 'failed' in DB
+    await supabase
+      .from('transcriptions')
+      .update({ status: 'failed' })
+      .eq('id', transcriptionId)
+    
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+```
+
+**Acceptance Criteria:**
+- [ ] Can submit URL → get transcript end-to-end
+- [ ] Progress indicator shows current step
+- [ ] Polling stops when status='completed'
+- [ ] Handles errors at any stage
+- [ ] Shows error message to user if failed
+- [ ] Transcript appears in list after processing
+- [ ] Committed to Git (branch: feature/end-to-end-flow)
+- [ ] PR created and merged to main
+
+---
+
+## Milestone 5: Polish & Deployment (Week 5)
+
+**Goal:** Production-ready MVP
+
+### Task 5.1: Error Handling & Edge Cases
+**Status:** ⏳ Not Started  
+**Dependencies:** Milestone 4 complete  
+**Estimated Time:** 2 hours
+
+**Actions:**
+- Invalid URLs (show clear error message)
+- Videos that can't download (detect and explain)
+- Whisper API failures (retry logic)
+- Rate limiting (prevent spam)
+- Loading states everywhere
+- Better error messages throughout app
+
+**Acceptance Criteria:**
+- [ ] All error cases handled gracefully
+- [ ] User always knows what went wrong
+- [ ] No silent failures
+- [ ] App never crashes
+- [ ] Committed to Git
+
+---
+
+### Task 5.2: UI Polish
+**Status:** ⏳ Not Started  
+**Dependencies:** Task 5.1 complete  
+**Estimated Time:** 2 hours
+
+**Actions:**
+- Add loading skeletons
+- Improve empty states
+- Make fully mobile-responsive
+- Add keyboard shortcuts (optional)
+- Polish animations/transitions
+- Improve form UX
+
+**Acceptance Criteria:**
+- [ ] App looks professional
+- [ ] Works perfectly on mobile
+- [ ] Loading states feel smooth
+- [ ] Empty states are helpful
+- [ ] Committed to Git
+
+---
+
+### Task 5.3: Deployment
+**Status:** ⏳ Not Started  
+**Dependencies:** Tasks 5.1 and 5.2 complete  
+**Estimated Time:** 1 hour
+
+**Actions:**
+- Deploy to Vercel (connect GitHub repo)
+- Set up production Supabase project
+- Configure production environment variables
+- Test production build end-to-end
+- Set up custom domain (optional)
+
+**Vercel Deployment:**
+1. Go to vercel.com
+2. Import GitHub repository
+3. Configure environment variables (from .env.local)
+4. Deploy
+5. Test at live URL
+
+**Acceptance Criteria:**
+- [ ] App is live at public URL
+- [ ] Production Supabase working
+- [ ] Can sign in with Google in production
+- [ ] Can transcribe videos in production
+- [ ] No critical bugs
+- [ ] Final commit to main branch
+
+---
+
+## Git/GitHub Workflow
+
+### Branch Strategy
+- **main** - Production-ready code
+- **feature/[task-name]** - One branch per task
+
+### Commit Messages
+Format: `[type]: [description]`
+
+Types:
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `chore:` - Maintenance (dependencies, config)
+- `docs:` - Documentation
+- `refactor:` - Code restructuring
+
+Examples:
+- `feat: add Google OAuth authentication`
+- `feat: create transcription form with validation`
+- `fix: handle video download errors properly`
+- `chore: install Supabase client library`
+
+### Pull Request Process
+1. Create feature branch
+2. Make changes and commit
+3. Push to GitHub
+4. Open Pull Request
+5. Review your own changes
+6. Merge to main
+7. Delete feature branch
+8. Pull latest main locally
+
+---
+
+## Dependencies Between Tasks
+
+### Critical Path
+```
+Task 1.1 (Project Init)
+    ↓
+Task 1.2 (Supabase Setup)
+    ↓
+Task 1.3 (Auth Pages)
+    ↓
+Task 2.1 (Database Schema)
+    ↓
+Task 2.2 (Mock Form) + Task 2.3 (Mock List)
+    ↓
+Task 3.1 (Real DB Writes)
+    ↓
+Task 3.2 (Real Data Fetching)
+    ↓
+Task 4.1 (Video Download)
+    ↓
+Task 4.2 (Whisper API)
+    ↓
+Task 4.3 (End-to-End Flow)
+    ↓
+Task 5.1 (Error Handling)
+    ↓
+Task 5.2 (UI Polish)
+    ↓
+Task 5.3 (Deployment)
+```
+
+### Parallel Work Possible
+- Task 2.2 and 2.3 can be done in parallel (both use Task 2.1)
+- Task 5.1 and 5.2 can overlap
+
+---
+
+## Current Status
+
+### What's Complete
+- ✅ Project context defined
+- ✅ Tech stack chosen
+- ✅ Architecture planned
+- ✅ Milestones outlined
+- ✅ Cursor rules created
+
+### Currently Working On
+**Task 1.1: Project Initialization**
+- About to initialize Next.js project
+- Will set up Git and GitHub
+- Will create initial project structure
+
+### Next Immediate Steps
+1. Initialize Next.js 14 project with TypeScript and Tailwind
+2. Set up folder structure
+3. Initialize Git repository
+4. Create GitHub repository
+5. Push first commit
+
+---
+
+## Common Questions & Troubleshooting
+
+### "Why mock data first?"
+- Learn UI patterns without backend complexity
+- Iterate on design faster
+- Test user experience before real API costs
+- Understand data flow before adding external dependencies
+
+### "Why separate API routes?"
+- Focused functionality (easier to debug)
+- Can test each step independently
+- Reusable (can call from multiple places)
+- Follows single responsibility principle
+
+### "Why Server Components?"
+- Faster page loads (less JavaScript to browser)
+- Can access database directly (no API needed)
+- Better SEO (content rendered on server)
+- More secure (sensitive logic stays on server)
+
+### "When to use Client Components?"
+- Forms with state (useState, useForm)
+- Interactive UI (onClick, onChange)
+- Browser APIs (localStorage, window)
+- Real-time updates (polling, WebSockets)
+
+---
+
+## Notes & Learnings
+
+### Key Learnings to Track
+- How npm packages work
+- Git workflow (commit, push, PR, merge)
+- Next.js App Router patterns
+- Server vs Client Components
+- Supabase authentication flow
+- Database queries and RLS
+- API route patterns
+- Error handling strategies
+- Deployment process
+
+### Questions to Ask When Stuck
+1. "What am I trying to achieve?"
+2. "What's the error message saying?"
+3. "Did I save all files?"
+4. "Did I commit my changes?"
+5. "Is this a server or client component issue?"
+6. "Did I install the necessary packages?"
+7. "Are my environment variables set correctly?"
+
+---
+
+## Resources
+
+### Documentation
+- Next.js: https://nextjs.org/docs
+- Supabase: https://supabase.com/docs
+- Tailwind CSS: https://tailwindcss.com/docs
+- shadcn/ui: https://ui.shadcn.com
+- OpenAI Whisper: https://platform.openai.com/docs/guides/speech-to-text
+
+### When Stuck
+- Google the exact error message
+- Check official documentation
+- Ask in this Claude Project
+- Search Stack Overflow
+- Review previous similar code in project
+
+---
+
+## Future Phases (After MVP)
+
+### Phase 2: Script Analysis
+- Analyze multiple transcripts
+- Identify patterns (structure, hooks, CTAs)
+- Generate style guide
+
+### Phase 3: Hook Bank
+- Focus on first 5-10 seconds
+- Batch processing multiple videos
+- Categorize hook types
+
+### Phase 4: Branding & ICP
+- User defines brand voice
+- Creates ICP profile
+- AI generates content suggestions
+
+**Not thinking about these now - focus on MVP!**
+
+---
+
+## Success Metrics
+
+### Learning Success
+- Can initialize project independently
+- Understand Git workflow
+- Can read and modify code
+- Know when to use Server vs Client components
+- Can debug common errors
+
+### Product Success
+- Can transcribe TikTok video
+- Can transcribe Instagram Reel
+- Transcripts are accurate
+- Process takes <2 minutes
+- No critical bugs
+- Deployed and accessible
+
+---
+
+## Cost Tracking
+
+### Expected Costs (Monthly)
+- Vercel: $0 (Hobby plan)
+- Supabase: $0 (Free tier, 500MB DB)
+- OpenAI Whisper: ~$5-10 (testing)
+- Cursor Pro: $20
+- GitHub: $0 (Free tier)
+
+**Total: ~$25-30/month during development**
+
+---
+
+## Update Log
+
+**[Date]** - Created comprehensive project rules
+**[Date]** - Started Milestone 1, Task 1.1
+[Update this as you progress]
