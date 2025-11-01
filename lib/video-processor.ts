@@ -32,18 +32,19 @@ export async function downloadAndExtractAudio(
     // Download video using yt-dlp
     // The -f flag selects the best format
     // The -o flag specifies output filename
-    // Try common yt-dlp locations
+    // Try common yt-dlp locations (prioritize system PATH for Railway/production)
     const ytDlpPaths = [
-      '/Users/isak/Library/Python/3.9/bin/yt-dlp',
-      '/usr/local/bin/yt-dlp',
-      'yt-dlp' // If in PATH
+      'yt-dlp', // If in PATH (Railway, production)
+      '/usr/local/bin/yt-dlp', // Homebrew on macOS
+      '/Users/isak/Library/Python/3.9/bin/yt-dlp', // Local Python install
     ]
     
-    let ytDlpPath = ytDlpPaths[0] // Default to first one
+    let ytDlpPath = 'yt-dlp' // Default to PATH
     for (const path of ytDlpPaths) {
       try {
         await execAsync(`${path} --version`)
         ytDlpPath = path
+        console.log(`[Video Processor] Using yt-dlp from: ${path}`)
         break
       } catch {
         continue
