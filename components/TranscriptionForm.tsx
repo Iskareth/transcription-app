@@ -134,12 +134,22 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
             </p>
           </div>
 
-          <button
-            onClick={handleReset}
-            className="w-full rounded-md bg-gray-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
-          >
-            Transcribe Another Video
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(mockTranscript)
+              }}
+              className="flex-1 rounded-md bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            >
+              📋 Copy Transcript
+            </button>
+            <button
+              onClick={handleReset}
+              className="flex-1 rounded-md bg-gray-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
+            >
+              Transcribe Another Video
+            </button>
+          </div>
         </div>
       )}
     </div>
