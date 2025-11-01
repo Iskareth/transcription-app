@@ -2,6 +2,7 @@
 
 import { Transcription } from '@/types/database'
 import { useEffect } from 'react'
+import DeleteTranscriptionButton from './DeleteTranscriptionButton'
 
 interface TranscriptionModalProps {
   transcription: Transcription
@@ -116,23 +117,29 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 glass border-t border-white/10 px-6 py-4 flex justify-end gap-3">
-            <button
-              onClick={() => {
-                if (transcription.transcript) {
-                  navigator.clipboard.writeText(transcription.transcript)
-                }
-              }}
-              className="glass glass-hover px-4 py-2 text-sm font-medium text-white rounded-lg"
-            >
-              Copy Transcript
-            </button>
-            <button
-              onClick={onClose}
-              className="glass glass-hover px-4 py-2 text-sm font-medium text-white rounded-lg"
-            >
-              Close
-            </button>
+          <div className="sticky bottom-0 glass border-t border-white/10 px-6 py-4 flex justify-between items-center gap-3">
+            <DeleteTranscriptionButton 
+              transcriptionId={transcription.id} 
+              onDelete={onClose}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  if (transcription.transcript) {
+                    navigator.clipboard.writeText(transcription.transcript)
+                  }
+                }}
+                className="glass glass-hover px-4 py-2 text-sm font-medium text-white rounded-lg"
+              >
+                Copy Transcript
+              </button>
+              <button
+                onClick={onClose}
+                className="glass glass-hover px-4 py-2 text-sm font-medium text-white rounded-lg"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
     </div>

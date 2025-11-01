@@ -3,6 +3,7 @@
 import { Transcription } from '@/types/database'
 import { useState } from 'react'
 import TranscriptionModal from './TranscriptionModal'
+import DeleteTranscriptionButton from './DeleteTranscriptionButton'
 
 interface TranscriptionCardProps {
   transcription: Transcription
@@ -56,11 +57,14 @@ export default function TranscriptionCard({ transcription }: TranscriptionCardPr
             </div>
           </div>
           
-          {transcription.status === 'completed' && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-              ✓
-            </span>
-          )}
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            {transcription.status === 'completed' && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                ✓
+              </span>
+            )}
+            <DeleteTranscriptionButton transcriptionId={transcription.id} />
+          </div>
         </div>
 
         <p className="text-gray-300 text-sm mb-4 line-clamp-2">
