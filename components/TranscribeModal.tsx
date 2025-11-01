@@ -81,7 +81,6 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }
