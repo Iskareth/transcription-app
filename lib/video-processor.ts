@@ -50,10 +50,9 @@ export async function downloadAndExtractAudio(
       }
     }
     
-    // For Instagram, use simpler format selector. For TikTok, use quality limit
-    const isInstagram = videoUrl.includes('instagram.com')
-    const formatSelector = isInstagram ? '-f best' : '-f "best[height<=720]"'
-    const downloadCommand = `${ytDlpPath} ${formatSelector} -o "${videoPath}" "${videoUrl}"`
+    // Download best available format (no restrictions)
+    // Using -f best without any filters to avoid format errors
+    const downloadCommand = `${ytDlpPath} -f best -o "${videoPath}" "${videoUrl}"`
     
     console.log(`[Video Processor] Running: yt-dlp download...`)
     console.log(`[Video Processor] Command: ${downloadCommand}`)
