@@ -4,16 +4,18 @@ import { downloadAndExtractAudio } from '@/lib/video-processor'
 import { transcribeAudio } from '@/lib/transcription'
 
 export async function POST(request: NextRequest) {
-  try {
-    // Get request body
-    const { transcriptionId, videoUrl } = await request.json()
+  // Parse request body once at the top
+  const body = await request.json()
+  const { transcriptionId, videoUrl } = body
 
-    if (!transcriptionId || !videoUrl) {
-      return NextResponse.json(
-        { error: 'Missing transcriptionId or videoUrl' },
-        { status: 400 }
-      )
-    }
+  if (!transcriptionId || !videoUrl) {
+    return NextResponse.json(
+      { error: 'Missing transcriptionId or videoUrl' },
+      { status: 400 }
+    )
+  }
+
+  try {
 
     console.log(`[Process Video] Starting for transcription: ${transcriptionId}`)
     console.log(`[Process Video] Video URL: ${videoUrl}`)
@@ -70,7 +72,6 @@ export async function POST(request: NextRequest) {
 
     // Try to update status to failed in database
     try {
-      const { transcriptionId } = await request.json()
       if (transcriptionId) {
         const supabase = await createClient()
         await supabase

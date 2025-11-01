@@ -50,9 +50,13 @@ export async function downloadAndExtractAudio(
       }
     }
     
-    const downloadCommand = `${ytDlpPath} -f "best[height<=720]" -o "${videoPath}" "${videoUrl}"`
+    // For Instagram, use simpler format selector. For TikTok, use quality limit
+    const isInstagram = videoUrl.includes('instagram.com')
+    const formatSelector = isInstagram ? '-f best' : '-f "best[height<=720]"'
+    const downloadCommand = `${ytDlpPath} ${formatSelector} -o "${videoPath}" "${videoUrl}"`
     
     console.log(`[Video Processor] Running: yt-dlp download...`)
+    console.log(`[Video Processor] Command: ${downloadCommand}`)
     await execAsync(downloadCommand, { maxBuffer: 50 * 1024 * 1024 })
     console.log(`[Video Processor] ✅ Video downloaded`)
 
