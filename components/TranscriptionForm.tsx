@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { detectPlatform, getUrlError } from '@/lib/validators'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface TranscriptionFormProps {
   onSuccess?: () => void
@@ -13,6 +15,9 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
   const [error, setError] = useState('')
   const [showMockResult, setShowMockResult] = useState(false)
   const [mockTranscript, setMockTranscript] = useState('')
+  
+  const router = useRouter()
+  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,21 +35,58 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
     
     setLoading(true)
 
-    // Simulate processing delay (2 seconds)
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        setError('You must be logged in to create transcriptions')
+        setLoading(false)
+        return
+      }
 
-    // Mock transcript based on platform
-    const mockText = platform === 'tiktok' 
-      ? "Hey everyone! Today I want to share three tips that completely changed my content strategy. First, always hook your audience in the first 3 seconds. Second, tell a story - people remember stories way better than facts. And third, always end with a call to action. Try these tips and let me know how they work for you!"
-      : "What's up Instagram! Quick reel to show you this amazing product I've been using. It's seriously a game changer and I think you all need to check it out. Link in bio if you want to grab one for yourself. Thanks for watching!"
+      // Simulate processing delay (2 seconds) - will be real API in Milestone 4
+      await new Promise(resolve => setTimeout(resolve, 2000))
 
-    setMockTranscript(mockText)
-    setShowMockResult(true)
-    setLoading(false)
-    
-    // Call success callback if provided
-    if (onSuccess) {
-      onSuccess()
+      // Mock transcript based on platform (will be real Whisper API in Milestone 4)
+      const mockText = platform === 'tiktok' 
+        ? "Hey everyone! Today I want to share three tips that completely changed my content strategy. First, always hook your audience in the first 3 seconds. Second, tell a story - people remember stories way better than facts. And third, always end with a call to action. Try these tips and let me know how they work for you!"
+        : "What's up Instagram! Quick reel to show you this amazing product I've been using. It's seriously a game changer and I think you all need to check it out. Link in bio if you want to grab one for yourself. Thanks for watching!"
+
+      // Auto-generate title from transcript (first 50 characters)
+      const autoTitle = mockText.substring(0, 50).trim() + '...'
+
+      // Save to Supabase
+      const { data, error: insertError } = await supabase
+        .from('transcriptions')
+        .insert({
+          user_id: user.id,
+          video_url: url,
+          platform: platform!,
+          title: autoTitle,
+          transcript: mockText,
+          status: 'completed',
+          duration_seconds: platform === 'tiktok' ? 45 : 32, // Mock duration
+        })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+
+      setMockTranscript(mockText)
+      setShowMockResult(true)
+      
+      // Refresh the page to show new transcription in list
+      router.refresh()
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess()
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to create transcription')
+    } finally {
+      setLoading(false)
     }
   }
 

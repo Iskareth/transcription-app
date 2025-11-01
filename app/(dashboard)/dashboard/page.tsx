@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import SignOutButton from '@/components/SignOutButton'
 import TranscriptionList from '@/components/TranscriptionList'
 import NewTranscriptionButton from '@/components/NewTranscriptionButton'
-import { mockTranscriptions } from '@/lib/mock-data'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -14,8 +13,16 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Using mock data for now - will replace with real Supabase query in Milestone 3
-  const transcriptions = mockTranscriptions
+  // Fetch real transcriptions from Supabase
+  const { data: transcriptions, error: fetchError } = await supabase
+    .from('transcriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (fetchError) {
+    console.error('Error fetching transcriptions:', fetchError)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,21 +37,15 @@ export default async function DashboardPage() {
           <SignOutButton />
         </div>
 
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6">
           <NewTranscriptionButton />
-
-          <div className="rounded-md bg-blue-50 px-4 py-2 border border-blue-200">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Mock Mode:</strong> Showing sample data
-            </p>
-          </div>
         </div>
 
         <div className="rounded-lg bg-white p-8 shadow">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             Your Transcriptions
           </h2>
-          <TranscriptionList transcriptions={transcriptions} />
+          <TranscriptionList transcriptions={transcriptions || []} />
         </div>
       </div>
     </div>
