@@ -33,17 +33,19 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 overflow-y-auto"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
       
-      {/* Modal */}
-      <div 
-        className="glass relative rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden my-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Modal Container */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        {/* Modal */}
+        <div 
+          className="glass relative rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden my-8"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
           <div className="sticky top-0 glass border-b border-white/10 px-6 py-4">
             <div className="flex items-start justify-between">
@@ -81,6 +83,7 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
             </div>
           </div>
         </div>
+      </div>
     </div>
   )
 }
