@@ -9,7 +9,7 @@ interface TranscribeModalProps {
 }
 
 export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProps) {
-  // Close modal on ESC key press
+  // Close modal on ESC key press and prevent body scroll
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -19,13 +19,21 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape)
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden'
+      // Prevent body scroll when modal is open and save scroll position
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'unset'
+      // Restore body scroll and position
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, parseInt(scrollY || '0') * -1)
     }
   }, [isOpen, onClose])
 
