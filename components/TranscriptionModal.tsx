@@ -136,7 +136,6 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
             </button>
           </div>
         </div>
-      </div>
     </div>
   )
 }
