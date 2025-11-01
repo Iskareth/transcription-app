@@ -37,29 +37,29 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
       
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div 
-          className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+          className="glass relative rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+          <div className="sticky top-0 glass border-b border-white/10 px-6 py-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                <h2 className="text-2xl font-bold text-white mb-1">
                   New Transcription
                 </h2>
-                <p className="text-sm text-gray-600">
-                  Paste a TikTok or Instagram Reel URL to get an AI-generated transcript
+                <p className="text-sm text-gray-400">
+                  Paste a TikTok or Instagram Reel URL
                 </p>
               </div>
               
               <button
                 onClick={onClose}
-                className="ml-4 text-gray-400 hover:text-gray-500 focus:outline-none"
+                className="ml-4 text-gray-400 hover:text-white focus:outline-none transition-colors"
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -72,13 +72,12 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
           <div className="px-6 py-6 overflow-y-auto max-h-[calc(90vh-120px)]">
             <TranscriptionForm />
 
-            <div className="mt-6 rounded-md bg-gray-50 p-4 border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">How it works:</h3>
-              <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                <li>Paste a TikTok or Instagram Reel URL</li>
-                <li>We download and convert the video to audio</li>
-                <li>AI transcribes the audio using OpenAI Whisper</li>
-                <li>You get the transcript in seconds!</li>
+            <div className="mt-6 glass rounded-xl p-4 border-white/5">
+              <h3 className="text-sm font-medium text-white mb-2">How it works:</h3>
+              <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside">
+                <li>Paste a video URL</li>
+                <li>AI transcribes the audio</li>
+                <li>Get your transcript instantly</li>
               </ol>
             </div>
           </div>

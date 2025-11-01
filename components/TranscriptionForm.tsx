@@ -102,7 +102,7 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
       {!showMockResult ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="video-url" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="video-url" className="block text-sm font-medium text-gray-300 mb-2">
               Video URL
             </label>
             <input
@@ -110,27 +110,27 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste TikTok or Instagram Reel URL here..."
+              placeholder="Paste TikTok or Instagram Reel URL..."
               disabled={loading}
-              className="block w-full rounded-md border-0 px-3 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="glass w-full rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {detectPlatform(url) && !error && (
-              <p className="mt-2 text-sm text-green-600">
+              <p className="mt-2 text-sm text-green-400">
                 ✓ Detected: {detectPlatform(url) === 'tiktok' ? 'TikTok' : 'Instagram Reel'}
               </p>
             )}
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div className="glass rounded-xl p-4 border-red-500/20">
+              <p className="text-sm text-red-400">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading || !url}
-            className="w-full flex justify-center items-center rounded-md bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="glass glass-hover w-full flex justify-center items-center rounded-xl px-4 py-3 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -145,34 +145,34 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
             )}
           </button>
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-400 text-center">
             🎬 Supported: TikTok videos and Instagram Reels
           </p>
         </form>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-lg bg-green-50 p-4 border border-green-200">
+          <div className="glass rounded-xl p-4 border-green-500/20">
             <div className="flex items-center mb-2">
-              <svg className="h-5 w-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <h3 className="text-sm font-semibold text-green-800">Transcription Complete!</h3>
+              <h3 className="text-sm font-semibold text-green-400">Transcription Complete!</h3>
             </div>
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-gray-300">
               Platform: {detectPlatform(url) === 'tiktok' ? 'TikTok' : 'Instagram'}
             </p>
           </div>
 
-          <div className="rounded-lg bg-white p-6 shadow border border-gray-200">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Transcript:</h4>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+          <div className="glass rounded-xl p-6">
+            <h4 className="text-sm font-medium text-gray-300 mb-3">Transcript:</h4>
+            <p className="text-white leading-relaxed whitespace-pre-wrap">
               {mockTranscript}
             </p>
           </div>
 
-          <div className="rounded-md bg-blue-50 p-4 border border-blue-200">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Mock Mode:</strong> This is a fake transcript for testing. In Milestone 4, we'll connect to the real Whisper API!
+          <div className="glass rounded-xl p-4 border-blue-500/20">
+            <p className="text-sm text-gray-300">
+              💡 <strong className="text-white">Mock Mode:</strong> Real transcription coming in Milestone 4!
             </p>
           </div>
 
@@ -181,15 +181,15 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
               onClick={() => {
                 navigator.clipboard.writeText(mockTranscript)
               }}
-              className="flex-1 rounded-md bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              className="glass glass-hover flex-1 rounded-xl px-4 py-3 text-sm font-medium text-white"
             >
-              📋 Copy Transcript
+              📋 Copy
             </button>
             <button
               onClick={handleReset}
-              className="flex-1 rounded-md bg-gray-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
+              className="glass glass-hover flex-1 rounded-xl px-4 py-3 text-sm font-medium text-white"
             >
-              Transcribe Another Video
+              New Transcription
             </button>
           </div>
         </div>
