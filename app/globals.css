@@ -24,13 +24,12 @@ body {
   }
   
   .glass-hover {
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
   }
   
   .glass-hover:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .text-balance {
