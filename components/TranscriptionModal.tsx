@@ -10,7 +10,7 @@ interface TranscriptionModalProps {
 }
 
 export default function TranscriptionModal({ transcription, isOpen, onClose }: TranscriptionModalProps) {
-  // Close modal on ESC key press and prevent body scroll
+  // Close modal on ESC key press
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -20,21 +20,12 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape)
-      // Prevent body scroll when modal is open and save scroll position
-      const scrollY = window.scrollY
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = '100%'
+      document.body.style.overflow = 'hidden'
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape)
-      // Restore body scroll and position
-      const scrollY = document.body.style.top
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      document.body.style.overflow = 'unset'
     }
   }, [isOpen, onClose])
 
@@ -54,19 +45,17 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
 
   return (
     <div 
-      className="fixed inset-0 z-50 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity -z-10" />
       
-      {/* Modal Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        {/* Modal */}
-        <div 
-          className="glass relative rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden my-8"
-          onClick={(e) => e.stopPropagation()}
-        >
+      {/* Modal */}
+      <div 
+        className="glass relative rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto my-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
           {/* Header */}
           <div className="sticky top-0 glass border-b border-white/10 px-6 py-4">
             <div className="flex items-start justify-between">
@@ -146,7 +135,6 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
             </button>
           </div>
         </div>
-      </div>
     </div>
   )
 }
