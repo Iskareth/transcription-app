@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import TranscriptionForm from './TranscriptionForm'
 
 interface TranscribeModalProps {
@@ -30,7 +31,10 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
 
   if (!isOpen) return null
 
-  return (
+  // Use portal to render modal at document root (prevents clipping)
+  if (typeof window === 'undefined') return null
+
+  return createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
@@ -80,7 +84,8 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
             </div>
           </div>
         </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

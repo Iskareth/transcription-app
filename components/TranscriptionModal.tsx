@@ -2,6 +2,7 @@
 
 import { Transcription } from '@/types/database'
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import DeleteTranscriptionButton from './DeleteTranscriptionButton'
 
 interface TranscriptionModalProps {
@@ -44,7 +45,10 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
     ? 'bg-pink-500/20 text-pink-400 border-pink-500/30' 
     : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
 
-  return (
+  // Use portal to render modal at document root (prevents clipping)
+  if (typeof window === 'undefined') return null
+
+  return createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
@@ -142,7 +146,8 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
             </div>
           </div>
         </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
