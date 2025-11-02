@@ -2,10 +2,7 @@
 # This tells Railway to install Python, yt-dlp, and ffmpeg
 
 [phases.setup]
-nixPkgs = ["python310", "python310Packages.pip", "ffmpeg"]
-
-[phases.install]
-cmds = ["pip install yt-dlp"]
+nixPkgs = ["python310", "python310Packages.pip", "ffmpeg", "yt-dlp"]
 
 [start]
 cmd = "npm run start"
