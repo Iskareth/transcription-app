@@ -12,6 +12,7 @@ export const mockTranscriptions: Transcription[] = [
     audio_url: null,
     duration_seconds: 45,
     status: 'completed',
+    tags: ['Marketing', 'Business Tips'],
     created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
     updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   },
@@ -25,6 +26,7 @@ export const mockTranscriptions: Transcription[] = [
     audio_url: null,
     duration_seconds: 32,
     status: 'completed',
+    tags: ['Product Review', 'Tech'],
     created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
     updated_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -38,6 +40,7 @@ export const mockTranscriptions: Transcription[] = [
     audio_url: null,
     duration_seconds: 58,
     status: 'completed',
+    tags: ['Vlog', 'Behind the Scenes'],
     created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
     updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -51,6 +54,7 @@ export const mockTranscriptions: Transcription[] = [
     audio_url: null,
     duration_seconds: 28,
     status: 'completed',
+    tags: ['Fitness', 'Workout Tips'],
     created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
     updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -64,6 +68,7 @@ export const mockTranscriptions: Transcription[] = [
     audio_url: null,
     duration_seconds: 38,
     status: 'completed',
+    tags: ['Cooking', 'Recipe', 'Quick Meals'],
     created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
     updated_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   },
