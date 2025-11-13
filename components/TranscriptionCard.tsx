@@ -4,6 +4,8 @@ import { Transcription } from '@/types/database'
 import { useState } from 'react'
 import TranscriptionModal from './TranscriptionModal'
 import DeleteTranscriptionButton from './DeleteTranscriptionButton'
+import EditableTitle from './EditableTitle'
+import TagManager from './TagManager'
 
 interface TranscriptionCardProps {
   transcription: Transcription
@@ -42,9 +44,13 @@ export default function TranscriptionCard({ transcription }: TranscriptionCardPr
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-white mb-2">
-              {transcription.title || 'Untitled Video'}
-            </h3>
+            <div className="mb-2">
+              <EditableTitle
+                transcriptionId={transcription.id}
+                initialTitle={transcription.title}
+                className="text-lg font-semibold text-white"
+              />
+            </div>
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${platformColor}`}>
                 {transcription.platform === 'tiktok'
@@ -77,6 +83,15 @@ export default function TranscriptionCard({ transcription }: TranscriptionCardPr
         <p className="text-gray-300 text-sm mb-4 line-clamp-2">
           {snippet}
         </p>
+
+        {/* Tags */}
+        <div className="mb-4">
+          <TagManager
+            transcriptionId={transcription.id}
+            initialTags={transcription.tags}
+            compact={true}
+          />
+        </div>
 
         <div className="flex items-center justify-between text-sm">
           <a

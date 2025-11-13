@@ -20,6 +20,7 @@ export type Database = {
           audio_url: string | null
           duration_seconds: number | null
           status: 'processing' | 'completed' | 'failed'
+          tags: string[] | null
           created_at: string
           updated_at: string
         }
@@ -33,6 +34,7 @@ export type Database = {
           audio_url?: string | null
           duration_seconds?: number | null
           status?: 'processing' | 'completed' | 'failed'
+          tags?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -40,12 +42,13 @@ export type Database = {
           id?: string
           user_id?: string
           video_url?: string
-          platform?: 'tiktok' | 'instagram'
+          platform?: 'tiktok' | 'instagram' | 'youtube'
           title?: string | null
           transcript?: string | null
           audio_url?: string | null
           duration_seconds?: number | null
           status?: 'processing' | 'completed' | 'failed'
+          tags?: string[] | null
           created_at?: string
           updated_at?: string
         }

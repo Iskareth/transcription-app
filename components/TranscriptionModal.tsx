@@ -4,6 +4,8 @@ import { Transcription } from '@/types/database'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import DeleteTranscriptionButton from './DeleteTranscriptionButton'
+import EditableTitle from './EditableTitle'
+import TagManager from './TagManager'
 
 interface TranscriptionModalProps {
   transcription: Transcription
@@ -68,9 +70,13 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
           <div className="sticky top-0 glass border-b border-white/10 px-6 py-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {transcription.title || 'Untitled Video'}
-                </h2>
+                <div className="mb-2">
+                  <EditableTitle
+                    transcriptionId={transcription.id}
+                    initialTitle={transcription.title}
+                    className="text-2xl font-bold text-white"
+                  />
+                </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${platformColor}`}>
                     {transcription.platform === 'tiktok'
@@ -88,8 +94,17 @@ export default function TranscriptionModal({ transcription, isOpen, onClose }: T
                     </>
                   )}
                 </div>
+
+                {/* Tags */}
+                <div className="mt-3">
+                  <TagManager
+                    transcriptionId={transcription.id}
+                    initialTags={transcription.tags}
+                    compact={false}
+                  />
+                </div>
               </div>
-              
+
               <button
                 onClick={onClose}
                 className="ml-4 text-gray-400 hover:text-white focus:outline-none transition-colors"
