@@ -23,19 +23,33 @@ export function isInstagramUrl(url: string): boolean {
 }
 
 /**
+ * Validates if a URL is from YouTube Shorts
+ */
+export function isYouTubeUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url)
+    return (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be'))
+      && url.includes('/shorts')
+  } catch {
+    return false
+  }
+}
+
+/**
  * Detects the platform from a URL
  */
-export function detectPlatform(url: string): 'tiktok' | 'instagram' | null {
+export function detectPlatform(url: string): 'tiktok' | 'instagram' | 'youtube' | null {
   if (isTikTokUrl(url)) return 'tiktok'
   if (isInstagramUrl(url)) return 'instagram'
+  if (isYouTubeUrl(url)) return 'youtube'
   return null
 }
 
 /**
- * Validates if a URL is a valid TikTok or Instagram Reel URL
+ * Validates if a URL is a valid TikTok, Instagram Reel, or YouTube Shorts URL
  */
 export function isValidVideoUrl(url: string): boolean {
-  return isTikTokUrl(url) || isInstagramUrl(url)
+  return isTikTokUrl(url) || isInstagramUrl(url) || isYouTubeUrl(url)
 }
 
 /**
@@ -53,7 +67,7 @@ export function getUrlError(url: string): string | null {
   }
 
   if (!isValidVideoUrl(url)) {
-    return 'Please enter a TikTok or Instagram Reel URL'
+    return 'Please enter a TikTok, Instagram Reel, or YouTube Shorts URL'
   }
 
   return null

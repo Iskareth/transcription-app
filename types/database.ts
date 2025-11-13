@@ -14,7 +14,7 @@ export type Database = {
           id: string
           user_id: string
           video_url: string
-          platform: 'tiktok' | 'instagram'
+          platform: 'tiktok' | 'instagram' | 'youtube'
           title: string | null
           transcript: string | null
           audio_url: string | null
@@ -27,7 +27,7 @@ export type Database = {
           id?: string
           user_id: string
           video_url: string
-          platform: 'tiktok' | 'instagram'
+          platform: 'tiktok' | 'instagram' | 'youtube'
           title?: string | null
           transcript?: string | null
           audio_url?: string | null

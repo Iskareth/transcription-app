@@ -9,7 +9,7 @@ export default function Home() {
             Video Transcription
           </h1>
           <p className="text-xl text-gray-400">
-            AI-powered transcripts for TikTok and Instagram Reels
+            AI-powered transcripts for TikTok, Instagram Reels, and YouTube Shorts
           </p>
         </div>
         

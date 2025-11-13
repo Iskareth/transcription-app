@@ -27,7 +27,7 @@ export default async function TranscribePage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mt-2">New Transcription</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Paste a TikTok or Instagram Reel URL to get an AI-generated transcript
+            Paste a TikTok, Instagram Reel, or YouTube Shorts URL to get an AI-generated transcript
           </p>
         </div>
 
@@ -38,7 +38,7 @@ export default async function TranscribePage() {
         <div className="mt-6 rounded-md bg-gray-50 p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">How it works:</h3>
           <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-            <li>Paste a TikTok or Instagram Reel URL</li>
+            <li>Paste a TikTok, Instagram Reel, or YouTube Shorts URL (max 3 minutes)</li>
             <li>We download and convert the video to audio</li>
             <li>AI transcribes the audio using OpenAI Whisper</li>
             <li>You get the transcript in seconds!</li>

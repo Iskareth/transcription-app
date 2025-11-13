@@ -55,7 +55,7 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
                   New Transcription
                 </h2>
                 <p className="text-sm text-gray-400">
-                  Paste a TikTok or Instagram Reel URL
+                  Paste a TikTok, Instagram Reel, or YouTube Shorts URL
                 </p>
               </div>
               
@@ -77,7 +77,7 @@ export default function TranscribeModal({ isOpen, onClose }: TranscribeModalProp
             <div className="mt-6 glass rounded-xl p-4 border-white/5">
               <h3 className="text-sm font-medium text-white mb-2">How it works:</h3>
               <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside">
-                <li>Paste a video URL</li>
+                <li>Paste a video URL (max 3 minutes)</li>
                 <li>AI transcribes the audio</li>
                 <li>Get your transcript instantly</li>
               </ol>

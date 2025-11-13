@@ -12,7 +12,7 @@ interface AudioExtractionResult {
 }
 
 /**
- * Downloads a video from TikTok/Instagram and extracts audio as MP3
+ * Downloads a video from TikTok/Instagram/YouTube and extracts audio as MP3
  * Uses yt-dlp for downloading and ffmpeg for audio extraction
  */
 export async function downloadAndExtractAudio(
@@ -63,6 +63,23 @@ export async function downloadAndExtractAudio(
     // Check if video file exists
     if (!fs.existsSync(videoPath)) {
       throw new Error('Video download failed - file not found')
+    }
+
+    // Check video duration BEFORE extracting audio (to save processing time)
+    console.log(`[Video Processor] Checking video duration...`)
+    const videoDurationCommand = `ffprobe -i "${videoPath}" -show_entries format=duration -v quiet -of csv="p=0"`
+    const { stdout: videoDurationOutput } = await execAsync(videoDurationCommand)
+    const videoDuration = parseFloat(videoDurationOutput.trim())
+    console.log(`[Video Processor] Video duration: ${videoDuration}s`)
+
+    // Reject videos longer than 3 minutes (180 seconds)
+    const MAX_DURATION_SECONDS = 180
+    if (videoDuration > MAX_DURATION_SECONDS) {
+      // Clean up the video file before throwing error
+      fs.unlinkSync(videoPath)
+      throw new Error(
+        `Video is too long (${Math.round(videoDuration)}s). Maximum allowed duration is ${MAX_DURATION_SECONDS}s (3 minutes). This tool is designed for short-form videos only.`
+      )
     }
 
     // Extract audio using ffmpeg

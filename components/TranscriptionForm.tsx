@@ -145,13 +145,18 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste TikTok or Instagram Reel URL..."
+              placeholder="Paste TikTok, Instagram Reel, or YouTube Shorts URL..."
               disabled={loading}
               className="glass w-full rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {detectPlatform(url) && !error && (
               <p className="mt-2 text-sm text-green-400">
-                ✓ Detected: {detectPlatform(url) === 'tiktok' ? 'TikTok' : 'Instagram Reel'}
+                ✓ Detected:{' '}
+                {detectPlatform(url) === 'tiktok'
+                  ? 'TikTok'
+                  : detectPlatform(url) === 'instagram'
+                  ? 'Instagram Reel'
+                  : 'YouTube Shorts'}
               </p>
             )}
           </div>
@@ -189,7 +194,8 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
           )}
 
           <p className="text-xs text-gray-400 text-center">
-            🎬 Supported: TikTok videos and Instagram Reels
+            🎬 Supported: TikTok videos, Instagram Reels, and YouTube Shorts<br />
+            ⏱️ Maximum duration: 3 minutes
           </p>
         </form>
       ) : (
@@ -202,7 +208,12 @@ export default function TranscriptionForm({ onSuccess }: TranscriptionFormProps)
               <h3 className="text-sm font-semibold text-green-400">Transcription Complete!</h3>
             </div>
             <p className="text-sm text-gray-300">
-              Platform: {detectPlatform(url) === 'tiktok' ? 'TikTok' : 'Instagram'}
+              Platform:{' '}
+              {detectPlatform(url) === 'tiktok'
+                ? 'TikTok'
+                : detectPlatform(url) === 'instagram'
+                ? 'Instagram'
+                : 'YouTube Shorts'}
             </p>
           </div>
 

@@ -27,9 +27,12 @@ export default function TranscriptionCard({ transcription }: TranscriptionCardPr
     : 'No transcript available'
 
   // Platform badge styling
-  const platformColor = transcription.platform === 'tiktok' 
-    ? 'bg-pink-500/20 text-pink-400 border-pink-500/30' 
-    : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+  const platformColor =
+    transcription.platform === 'tiktok'
+      ? 'bg-pink-500/20 text-pink-400 border-pink-500/30'
+      : transcription.platform === 'instagram'
+      ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+      : 'bg-red-500/20 text-red-400 border-red-500/30' // YouTube
 
   return (
     <>
@@ -44,7 +47,11 @@ export default function TranscriptionCard({ transcription }: TranscriptionCardPr
             </h3>
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${platformColor}`}>
-                {transcription.platform === 'tiktok' ? 'TikTok' : 'Instagram'}
+                {transcription.platform === 'tiktok'
+                  ? 'TikTok'
+                  : transcription.platform === 'instagram'
+                  ? 'Instagram'
+                  : 'YouTube'}
               </span>
               <span>•</span>
               <span>{formattedDate}</span>

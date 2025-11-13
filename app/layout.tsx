@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Video Transcription Tool',
-  description: 'Transcribe TikTok and Instagram videos with AI',
+  description: 'Transcribe TikTok, Instagram, and YouTube videos with AI',
 }
 
 export default function RootLayout({
